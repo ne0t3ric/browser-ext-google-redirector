@@ -26,5 +26,10 @@
 		"48": "icons/icon.png"
 	  },
 	  "default_title": "Google Redirector"
+  },
+    "browser_specific_settings": {
+    "gecko": {
+	  "id": "google_redirector@eh.fr"
+    }
   }
 }
