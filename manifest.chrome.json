@@ -2,7 +2,7 @@
   "description": "Redirect to google.fr until https certificate check doesnt failed by MF proxy, because google.fr is more easily validated by proxy than google.com",
   "manifest_version": 2,
   "name": "Google redirector",
-  "version": "1.2",
+  "version": "1.3",
   "icons": {
 	"48": "icons/icon.png"
   },
