@@ -73,12 +73,11 @@ function onCompletedRequestListener(details) {
     	originUrlString,
     	originUrl,
     	isMainRequest,
-    	isRequestComingFromLinkGoogle,
-    	shouldRedirect(currentUrl)
-    })*/
-
+    	isRequestComingFromLinkGoogle
+    });*/
+	
     if (statusCode === 403) {
-        if (isMainRequest) {
+        if (isMainRequest && shouldRedirect(currentUrl)) {
 			var newUrl = useGoogleFRUrl(currentUrl);
 
 			browser.tabs.update(tabId, {
