@@ -1,95 +1,116 @@
-function shouldRedirect(urlstring){
-	if (!isValidHttpUrl(urlstring)){
-		return false;
-	}
-	
+function shouldRedirect(urlstring) {
+    if (!isValidHttpUrl(urlstring)) {
+        return false;
+    }
+
     var url = new URL(urlstring);
-	
-	return url.protocol === "https:" && isAGoogleUrl(url)
+
+    return url.protocol === "https:" && isAGoogleUrl(url)
 }
 
 function isValidHttpUrl(string) {
-  var url;
-  
-  try {
-    url = new URL(string);
-  } catch (_) {
-    return false;  
-  }
+    var url;
 
-  return url.protocol === "http:" || url.protocol === "https:";
+    try {
+        url = new URL(string);
+    } catch (_) {
+        return false;
+    }
+
+    return url.protocol === "http:" || url.protocol === "https:";
 }
 
-function useGoogleFRUrl(urlstring){
-	var url = new URL(urlstring);
+function useGoogleFRUrl(urlstring) {
+    var url = new URL(urlstring);
 
-	url.protocol = "http:";
-	url.hostname = "www.google.fr";
-		
-	return url.toString();
+    url.protocol = "http:";
+    url.hostname = "www.google.fr";
+
+    return url.toString();
 }
 
-function isAGoogleUrl(url){
-	return [
-		'www.google.com',
-		'www.google.com',
-		'www.google.fr',
-		'www.google.fr',
-	].includes(url.hostname)
+function isAGoogleUrl(url) {
+    return [
+        'www.google.com',
+        'www.google.com',
+        'www.google.fr',
+        'www.google.fr',
+    ].includes(url.hostname)
 }
 
-function browserActionListener(tab){
-	//get current URL
+function browserActionListener(tab) {
+    //get current URL
     var currentUrl = tab.url;
 
-	//create a new url
-	if (shouldRedirect(currentUrl)){
-		var newUrl = useGoogleFRUrl(currentUrl);
-		
-		//Update the current url to the proxyed url
-		browser.tabs.update(tab.id, {url: newUrl});
-	}
+    //create a new url
+    if (shouldRedirect(currentUrl)) {
+        var newUrl = useGoogleFRUrl(currentUrl);
+
+        //Update the current url to the proxyed url
+        browser.tabs.update(tab.id, {
+            url: newUrl
+        });
+    }
 }
 
 
-function onCompletedRequestListener(details){
-  var statusCode = details.statusCode;
-  var currentUrl = details.url;
-  var requestedResourceType = details.type;
-  var originUrlString = details.originUrl ? details.originUrl : details.initiator ? details.initiator : '';
-  var originUrl = isValidHttpUrl(originUrlString) ? new URL(originUrlString) : new URL('http://dummy');
+function onCompletedRequestListener(details) {
+	var tabId = details.tabId;
+    var statusCode = details.statusCode;
+    var currentUrl = details.url;
+    var requestedResourceType = details.type;
+    var originUrlString = details.originUrl ? details.originUrl : details.initiator ? details.initiator : '';
+    var originUrl = isValidHttpUrl(originUrlString) ? new URL(originUrlString) : new URL('http://dummy');
 
-  var isMainRequest = requestedResourceType === "main_frame";
-  var isRequestComingFromLinkGoogle = requestedResourceType === "other" && isAGoogleUrl(originUrl);
-	
-	
-   if ((isMainRequest || isRequestComingFromLinkGoogle) && statusCode === 403 && shouldRedirect(currentUrl)){
-	  var tabId = details.tabId;
-	  var newUrl = useGoogleFRUrl(currentUrl);
+    var isMainRequest = requestedResourceType === "main_frame";
+    var isRequestComingFromLinkGoogle = !isAGoogleUrl(currentUrl) && isAGoogleUrl(originUrl);
 
-	  browser.tabs.update(tabId, {url: newUrl});
-   }
 
-  return;
+    /*console.log({
+    	currentUrl,
+    	statusCode,
+    	requestedResourceType,
+    	originUrlString,
+    	originUrl,
+    	isMainRequest,
+    	isRequestComingFromLinkGoogle,
+    	shouldRedirect(currentUrl)
+    })*/
+
+    if (statusCode === 403) {
+        if (isMainRequest) {
+			var newUrl = useGoogleFRUrl(currentUrl);
+
+			browser.tabs.update(tabId, {
+				url: newUrl
+			});
+		} else if (isRequestComingFromLinkGoogle) {
+			browser.tabs.update(tabId, {
+				url: currentUrl
+			});
+        }
+    }
+
+
+    return;
 }
 
 
 // Force refresh by clicking on addon icon
-if (!browser.browserAction.onClicked.hasListener(browserActionListener)){
-	browser.browserAction.onClicked.addListener(browserActionListener);
+if (!browser.browserAction.onClicked.hasListener(browserActionListener)) {
+    browser.browserAction.onClicked.addListener(browserActionListener);
 };
 
 
 // Catch 403 error for google requests (coming from proxy)
-if (!browser.webRequest.onCompleted.hasListener(onCompletedRequestListener)){
-	browser.webRequest.onCompleted.addListener(
-	 onCompletedRequestListener,
-	{
-		urls: ["<all_urls>"],
-		types: ["main_frame", "other"]
-	},
-	[]
-	)
+if (!browser.webRequest.onCompleted.hasListener(onCompletedRequestListener)) {
+    browser.webRequest.onCompleted.addListener(
+        onCompletedRequestListener, {
+            urls: ["<all_urls>"],
+            types: ["main_frame"]
+        },
+        []
+    )
 };
 
 
