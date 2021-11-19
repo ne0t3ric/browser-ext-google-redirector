@@ -1,8 +1,6 @@
-# Redirect
+# Google redirector
 
 
 ## What it does
 
-This extension just includes:
-
-* a content script, "redirect.js"
+Redirect to google.fr when it's .com, or refresh if it google.fr, until certificate check by proxy works
