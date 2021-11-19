@@ -1,12 +1,11 @@
-function isMutable(urlstring){
+function shouldRedirect(urlstring){
+	if (!isValidHttpUrl(urlstring)){
+		return false;
+	}
+	
     var url = new URL(urlstring);
 	
-	return url.protocol === "https:" && [
-		'www.google.com',
-		'www.google.com',
-		'www.google.fr',
-		'www.google.fr',
-	].includes(url.hostname)
+	return url.protocol === "https:" && isAGoogleUrl(url)
 }
 
 function isValidHttpUrl(string) {
@@ -30,15 +29,21 @@ function useGoogleFRUrl(urlstring){
 	return url.toString();
 }
 
+function isAGoogleUrl(url){
+	return [
+		'www.google.com',
+		'www.google.com',
+		'www.google.fr',
+		'www.google.fr',
+	].includes(url.hostname)
+}
+
 function browserActionListener(tab){
 	//get current URL
     var currentUrl = tab.url;
-	if (!isValidHttpUrl(currentUrl)){
-		return;
-	}
-	
+
 	//create a new url
-	if (isMutable(currentUrl)){
+	if (shouldRedirect(currentUrl)){
 		var newUrl = useGoogleFRUrl(currentUrl);
 		
 		//Update the current url to the proxyed url
@@ -51,15 +56,14 @@ function onCompletedRequestListener(details){
   var statusCode = details.statusCode;
   var currentUrl = details.url;
   var requestedResourceType = details.type;
-  var originUrlString = details.originUrl ? details.originUrl : (details.initiator ? details.initiator : '')
-
+  var originUrlString = details.originUrl ? details.originUrl : details.initiator ? details.initiator : '';
+  var originUrl = isValidHttpUrl(originUrlString) ? new URL(originUrlString) : new URL('http://dummy');
 
   var isMainRequest = requestedResourceType === "main_frame";
-  var isRequestComingFromLinkGoogle = (requestedResourceType === "other" && 
-	originUrlString && (new URL(details.originUrl)).hostname.includes('google.'));
+  var isRequestComingFromLinkGoogle = requestedResourceType === "other" && isAGoogleUrl(originUrl);
 	
 	
-   if ((isMainRequest || isRequestComingFromLinkGoogle) && statusCode === 403 && isMutable(currentUrl)){
+   if ((isMainRequest || isRequestComingFromLinkGoogle) && statusCode === 403 && shouldRedirect(currentUrl)){
 	  var tabId = details.tabId;
 	  var newUrl = useGoogleFRUrl(currentUrl);
 
@@ -97,15 +101,11 @@ if (!browser.webRequest.onCompleted.hasListener(onCompletedRequestListener)){
 function onBeforeRequestListener(details){
   var currentUrl = details.url;
   
-  if (!isValidHttpUrl(currentUrl)){
-		return;
-	}
-	
-  var newUrl = useGoogleFRUrl(currentUrl);
-	
-
-  return {
-	  redirectUrl: newUrl
+  if (shouldRedirect(currentUrl){
+	  var newUrl = useGoogleFRUrl(currentUrl);
+	  return {
+		  redirectUrl: newUrl
+	  }
   }
 }
 
@@ -125,7 +125,7 @@ if (!browser.webRequest.onBeforeRequest.hasListener(onBeforeRequestListener)){
 	  const currentUrl = details.url;
 	  var newUrl = useGoogleFRUrl(currentUrl);
 
-	  if (isMutable(details.url)){
+	  if (shouldRedirect(details.url)){
 		  var tabId = details.tabId;
 		  
 		  browser.tabs.update(tabId, {url: newUrl});
