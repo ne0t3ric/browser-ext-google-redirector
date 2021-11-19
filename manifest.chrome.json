@@ -1,0 +1,30 @@
+{
+  "description": "Redirect to google.fr until https certificate check doesnt failed by MF proxy, because google.fr is more easily validated by proxy than google.com",
+  "manifest_version": 2,
+  "name": "Google redirector",
+  "version": "1.1",
+  "icons": {
+	"48": "icons/icon.png"
+  },
+  "permissions": [
+    "webRequest",
+    "tabs",
+	"activeTab",
+    "http://*.google.fr/*",
+    "http://*.google.com/*",
+	"<all_urls>"
+  ],
+  "background": {
+	"scripts": [
+		"browser-polyfill.min.js",
+		"background.js"
+	]
+  },
+  "browser_action": {
+	  "browser_style": true,
+	  "default_icon": {
+		"48": "icons/icon.png"
+	  },
+	  "default_title": "Google Redirector"
+  }
+}
