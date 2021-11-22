@@ -21,3 +21,9 @@ Redirect to google.fr when it's .com, or refresh if it google.fr, until certific
 - From the left menu, navigate to "This Firefox" or "Ce Firefox"
 - Click on "Load Temporary Add-on..." and pick the manifest.json previously created
 
+## Use with Chrome
+
+- Download zip source code via github and unzip
+- Add a `manifest.json` file by copying `manifest.chrome.json` to `manifest.json` to the root folder
+- Go to firefox adress bar and type `chrome://extensions`
+- Click on "Load unpacked extension" and pick the root folder of extension previously downloaded
