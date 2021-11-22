@@ -55,7 +55,7 @@ function browserActionListener(tab) {
 
 
 function onCompletedRequestListener(details) {
-	var tabId = details.tabId;
+    var tabId = details.tabId;
     var statusCode = details.statusCode;
     var currentUrl = details.url;
     var requestedResourceType = details.type;
@@ -75,18 +75,18 @@ function onCompletedRequestListener(details) {
     	isMainRequest,
     	isRequestComingFromLinkGoogle
     });*/
-	
+
     if (statusCode === 403) {
         if (isMainRequest && shouldRedirect(currentUrl)) {
-			var newUrl = useGoogleFRUrl(currentUrl);
+            var newUrl = useGoogleFRUrl(currentUrl);
 
-			browser.tabs.update(tabId, {
-				url: newUrl
-			});
-		} else if (isRequestComingFromLinkGoogle) {
-			browser.tabs.update(tabId, {
-				url: currentUrl
-			});
+            browser.tabs.update(tabId, {
+                url: newUrl
+            });
+        } else if (isRequestComingFromLinkGoogle) {
+            browser.tabs.update(tabId, {
+                url: currentUrl
+            });
         }
     }
 
