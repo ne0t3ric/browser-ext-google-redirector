@@ -9,7 +9,9 @@ Redirect to google.fr when it's .com, or refresh if it google.fr, until certific
 
 
 ### [Recommanded] Import from Firefox .xpi file
-
+- Select last tag in github
+- Navigate to dist folder and download .xpi file
+- Open xpi file with Firefox, it should popup the add-on and the permissions acceptance form
 
 ### Import add-on in developping mode
 
